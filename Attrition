@@ -1,0 +1,26 @@
+/* add tiering to this */
+  
+SELECT
+  a.name as Customer
+  ,sum(b.zuora_mrr_c) as cmrr
+  ,max(a.total_paid_seats_c) as Total_Seats
+  ,a.subscription_type_c as Subscription_Type
+  ,a.subscription_end_date_c as Subscription_End_Date
+  ,a.health_c as Health_Type
+
+FROM  salesforce._account a
+LEFT JOIN salesforce._zuora_customer_account_c b
+  ON a.id = b.zuora_account_c    
+WHERE
+  a.health_c IN ('Pending Churn','Early Warning','High Churn Risk') 
+  AND a.type = 'Customer'
+  AND a.total_paid_seats_c > 0
+  
+GROUP BY
+  a.name
+  ,a.subscription_type_c
+  ,a.subscription_end_date_c
+  ,a.health_c       
+
+ORDER BY
+  cmrr DESC
